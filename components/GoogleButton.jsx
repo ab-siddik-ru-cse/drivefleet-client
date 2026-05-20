@@ -1,28 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { useAuth } from "@/components/AuthProvider";
 
 export default function GoogleButton() {
   const { loginWithGoogle } = useAuth();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
 
   const handleClick = async () => {
     setLoading(true);
-    const res = await loginWithGoogle();
-    setLoading(false);
-    if (!res.ok) {
-      toast.error(res.error || "Google sign-in failed.");
-      return;
-    }
-    toast.success("Welcome!");
     const redirect = searchParams.get("redirect") || "/";
-    router.push(redirect);
-    router.refresh();
+    const res = await loginWithGoogle(redirect);
+    if (!res.ok) {
+      setLoading(false);
+      toast.error(res.error || "Google sign-in failed.");
+    }
   };
 
   return (
@@ -38,7 +33,7 @@ export default function GoogleButton() {
         <path fill="#FBBC05" d="M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332z" />
         <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.346l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.167 6.656 3.58 9 3.58z" />
       </svg>
-      {loading ? "Signing in..." : "Continue with Google"}
+      {loading ? "Redirecting to Google..." : "Continue with Google"}
     </button>
   );
 }

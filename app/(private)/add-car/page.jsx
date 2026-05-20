@@ -3,28 +3,20 @@
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import CarForm from "@/components/CarForm";
+import { api } from "@/lib/api";
 
 export default function AddCarPage() {
   const router = useRouter();
 
   const handleSubmit = async (values) => {
     try {
-      const res = await fetch(`${process.env.API_URL}/cars`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error || "Could not create car.");
-        return;
-      }
+      await api("/api/cars", { method: "POST", body: values });
       toast.success("Car added successfully!");
       router.push("/my-cars");
       router.refresh();
     } catch (err) {
       console.error(err);
-      toast.error("Network error. Please try again.");
+      toast.error(err.message || "Could not create car.");
     }
   };
 

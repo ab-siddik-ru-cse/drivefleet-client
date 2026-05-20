@@ -6,6 +6,7 @@ import { Search, SlidersHorizontal, X } from "lucide-react";
 import CarCard from "@/components/CarCard";
 import Spinner from "@/components/Spinner";
 import { CAR_TYPES } from "@/lib/constants";
+import { api } from "@/lib/api";
 
 export default function ExplorePage() {
   const router = useRouter();
@@ -23,13 +24,11 @@ export default function ExplorePage() {
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Debounce search input
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q), 350);
     return () => clearTimeout(t);
   }, [q]);
 
-  // Sync filters to URL so reload + share works
   useEffect(() => {
     const params = new URLSearchParams();
     if (debouncedQ) params.set("q", debouncedQ);
@@ -46,8 +45,7 @@ export default function ExplorePage() {
       if (debouncedQ) params.set("q", debouncedQ);
       selectedTypes.forEach((t) => params.append("type", t));
       params.set("sort", sort);
-      const res = await fetch(`${process.env.API_URL}/cars?${params.toString()}`, { cache: "no-store" });
-      const data = await res.json();
+      const data = await api(`/api/cars?${params.toString()}`);
       setCars(data.cars ?? []);
     } catch (err) {
       console.error(err);

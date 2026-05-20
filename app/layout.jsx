@@ -11,7 +11,6 @@ export const metadata = {
   description: "Browse hundreds of vehicles from trusted owners. Book in seconds.",
 };
 
-// Avoid theme-flash on first load
 const themeScript = `
 (function(){try{
   var s=localStorage.getItem('df-theme');
@@ -22,8 +21,6 @@ const themeScript = `
 `;
 
 export default async function RootLayout({ children }) {
-  // Read user server-side so the navbar renders correctly on first paint
-  // and reloads on private routes don't redirect.
   const initialUser = await getCurrentUser();
 
   return (

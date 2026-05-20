@@ -10,6 +10,7 @@ import {
   CheckCircle2, XCircle, User,
 } from "lucide-react";
 import BookingModal from "@/components/BookingModal";
+import { api } from "@/lib/api";
 
 export default function CarDetailsClient({ car, currentUser }) {
   const router = useRouter();
@@ -24,26 +25,20 @@ export default function CarDetailsClient({ car, currentUser }) {
   const handleBooking = async ({ startDate, endDate, driverNeeded, specialNote }) => {
     setSubmitting(true);
     try {
-      const res = await fetch(`${process.env.API_URL}/bookings`, {
+      await api("/api/bookings", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body: {
           carId: car._id,
           startDate, endDate, driverNeeded, specialNote,
-        }),
+        },
       });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error || "Could not create booking.");
-        return;
-      }
       toast.success("Booking confirmed!");
       setModalOpen(false);
       router.push("/my-bookings");
       router.refresh();
     } catch (err) {
       console.error(err);
-      toast.error("Network error. Please try again.");
+      toast.error(err.message || "Could not create booking.");
     } finally {
       setSubmitting(false);
     }

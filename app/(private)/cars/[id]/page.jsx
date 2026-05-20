@@ -1,17 +1,15 @@
 import { notFound } from "next/navigation";
-import { ObjectId } from "mongodb";
-import { getDb } from "@/lib/mongodb";
+import { apiServer } from "@/lib/api";
 import { getCurrentUser } from "@/lib/auth";
 import CarDetailsClient from "./CarDetailsClient";
 
 async function getCar(id) {
   try {
-    const _id = new ObjectId(id);
-    const db = await getDb();
-    const doc = await db.collection("cars").findOne({ _id });
-    if (!doc) return null;
-    return { ...doc, _id: doc._id.toString(), createdAt: doc.createdAt?.toISOString?.() ?? doc.createdAt };
-  } catch {
+    const { car } = await apiServer(`/api/cars/${id}`);
+    return car;
+  } catch (err) {
+    if (err.status === 404) return null;
+    console.error("[car details] fetch failed:", err.message);
     return null;
   }
 }
