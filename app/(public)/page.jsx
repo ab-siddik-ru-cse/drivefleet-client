@@ -3,7 +3,6 @@ import Image from "next/image";
 
 import {
   Search,
-  ShieldCheck,
   Sparkles,
   Car as CarIcon,
   Zap,
@@ -14,7 +13,6 @@ import {
   CreditCard,
   Headphones,
   ChevronRight,
-  Star,
 } from "lucide-react";
 
 import CarCard from "@/components/CarCard";
