@@ -25,12 +25,15 @@ export default function CarDetailsClient({ car, currentUser }) {
   const handleBooking = async ({ startDate, endDate, driverNeeded, specialNote }) => {
     setSubmitting(true);
     try {
+      // Posts to drivefleet-server. The server requires our JWT cookie
+      // (df_token) — its requireAuth middleware verifies it — and runs
+      // $inc on the car's bookingCount inside the bookings route.
       await api("/api/bookings", {
         method: "POST",
-        body: {
+        body: JSON.stringify({
           carId: car._id,
           startDate, endDate, driverNeeded, specialNote,
-        },
+        }),
       });
       toast.success("Booking confirmed!");
       setModalOpen(false);

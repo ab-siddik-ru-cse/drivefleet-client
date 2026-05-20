@@ -24,11 +24,13 @@ export default function ExplorePage() {
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
 
+  // Debounce search input
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q), 350);
     return () => clearTimeout(t);
   }, [q]);
 
+  // Sync filters to URL so reload + share works
   useEffect(() => {
     const params = new URLSearchParams();
     if (debouncedQ) params.set("q", debouncedQ);
@@ -45,6 +47,8 @@ export default function ExplorePage() {
       if (debouncedQ) params.set("q", debouncedQ);
       selectedTypes.forEach((t) => params.append("type", t));
       params.set("sort", sort);
+      // Hits drivefleet-server. The server runs MongoDB $regex on name
+      // and $in on type — see drivefleet-server/src/routes/cars.js.
       const data = await api(`/api/cars?${params.toString()}`);
       setCars(data.cars ?? []);
     } catch (err) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useState } from "react";
-import { api, API_URL } from "@/lib/api";
+import { api, API_BASE } from "@/lib/api";
 
 const AuthContext = createContext(null);
 
@@ -9,109 +9,127 @@ export function AuthProvider({ children, initialUser = null }) {
   const [user, setUser] = useState(initialUser);
   const [loading, setLoading] = useState(false);
 
+  /**
+   * After ANY successful Better Auth sign-in (email or social), we call
+   * /api/session/issue-jwt to mint our own JWT cookie. The middleware
+   * on the server reads THAT cookie on protected routes.
+   */
+  const issueJwt = useCallback(async () => {
+    const { user } = await api("/api/session/issue-jwt", { method: "POST" });
+    setUser(user);
+    return user;
+  }, []);
+
+  /**
+   * Refresh the user state from the server. Called on mount in some pages
+   * and after any auth change.
+   */
   const refresh = useCallback(async () => {
     try {
       const { user } = await api("/api/session/me");
       setUser(user ?? null);
+      return user;
     } catch {
       setUser(null);
+      return null;
     }
   }, []);
 
+  /**
+   * Email + password sign-in.
+   * Step 1: Better Auth verifies credentials → sets its session cookie.
+   * Step 2: We mint our df_token cookie.
+   */
   const login = async (email, password) => {
     setLoading(true);
     try {
-      const r1 = await fetch(`${API_URL}/api/auth/sign-in/email`, {
+      await api("/api/auth/sign-in/email", {
         method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      if (!r1.ok) {
-        const data = await r1.json().catch(() => ({}));
-        return {
-          ok: false,
-          error: data.message || data.error || "Invalid email or password.",
-        };
-      }
-
-      const { user } = await api("/api/session/issue-jwt", { method: "POST" });
-      setUser(user);
-      return { ok: true };
+      const u = await issueJwt();
+      return { ok: true, user: u };
     } catch (err) {
-      return { ok: false, error: err.message || "Login failed." };
+      return { ok: false, error: err.message };
     } finally {
       setLoading(false);
     }
   };
 
+  /**
+   * Email + password sign-up.
+   * Better Auth creates the user, then we issue the JWT.
+   *
+   * Note: Better Auth's sign-up/email expects `name`, `email`, `password`.
+   */
   const register = async (name, email, password) => {
     setLoading(true);
     try {
-      const r1 = await fetch(`${API_URL}/api/auth/sign-up/email`, {
+      await api("/api/auth/sign-up/email", {
         method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
       });
-      if (!r1.ok) {
-        const data = await r1.json().catch(() => ({}));
-        return {
-          ok: false,
-          error: data.message || data.error || "Could not create account.",
-        };
-      }
-
-      const { user } = await api("/api/session/issue-jwt", { method: "POST" });
-      setUser(user);
-      return { ok: true };
+      const u = await issueJwt();
+      return { ok: true, user: u };
     } catch (err) {
-      return { ok: false, error: err.message || "Registration failed." };
+      return { ok: false, error: err.message };
     } finally {
       setLoading(false);
     }
   };
 
-  const loginWithGoogle = async (redirectAfter = "/") => {
+  /**
+   * Google sign-in.
+   * Better Auth returns a URL we should redirect to. After Google sends
+   * the user back to our /auth-callback page, that page calls issueJwt().
+   */
+  const loginWithGoogle = async () => {
     setLoading(true);
     try {
-      const callbackURL = `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectAfter)}`;
-      const res = await fetch(`${API_URL}/api/auth/sign-in/social`, {
+      const res = await api("/api/auth/sign-in/social", {
         method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           provider: "google",
-          callbackURL,
+          callbackURL: `${window.location.origin}/auth-callback`,
         }),
       });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.url) {
-        setLoading(false);
-        return {
-          ok: false,
-          error: data.message || data.error || "Could not start Google sign-in.",
-        };
+      if (!res?.url) {
+        return { ok: false, error: "Could not start Google sign-in." };
       }
-      window.location.href = data.url;
+      // Hand off to Google. Browser navigates away; nothing else to do here.
+      window.location.href = res.url;
       return { ok: true };
     } catch (err) {
       setLoading(false);
-      return { ok: false, error: err.message || "Google sign-in failed." };
+      return { ok: false, error: err.message };
     }
   };
 
+  /**
+   * Logout — clears both Better Auth session and our df_token cookie.
+   */
   const logout = async () => {
     try {
       await api("/api/session/logout", { method: "POST" });
     } catch {
+      // Even if the call fails (network), wipe local state.
     }
     setUser(null);
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, loginWithGoogle, logout, refresh }}
+      value={{
+        user,
+        loading,
+        login,
+        register,
+        loginWithGoogle,
+        logout,
+        refresh,
+        issueJwt,
+        apiBase: API_BASE,
+      }}
     >
       {children}
     </AuthContext.Provider>

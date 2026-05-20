@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Spinner from "@/components/Spinner";
 import ConfirmModal from "@/components/ConfirmModal";
+import { api } from "@/lib/api";
 
 function fmtDate(d) {
   return new Date(d).toLocaleDateString("en-US", {
@@ -26,17 +27,13 @@ export default function MyBookingsPage() {
   const fetchBookings = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.API_URL}/bookings`, { cache: "no-store" });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error || "Could not load your bookings.");
-        setBookings([]);
-        return;
-      }
+      // requireAuth on server filters by req.user.uid automatically.
+      const data = await api("/api/bookings");
       setBookings(data.bookings ?? []);
     } catch (err) {
       console.error(err);
-      toast.error("Network error.");
+      toast.error(err.message || "Could not load your bookings.");
+      setBookings([]);
     } finally {
       setLoading(false);
     }
@@ -62,12 +59,8 @@ export default function MyBookingsPage() {
     if (!pendingCancel) return;
     setCancelling(true);
     try {
-      const res = await fetch(`${process.env.API_URL}/bookings/${pendingCancel._id}`, { method: "DELETE" });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error || "Could not cancel booking.");
-        return;
-      }
+      // Server also runs $inc -1 on the car's bookingCount.
+      await api(`/api/bookings/${pendingCancel._id}`, { method: "DELETE" });
       toast.success("Booking cancelled.");
       setBookings((cur) =>
         cur.map((b) => (b._id === pendingCancel._id ? { ...b, status: "cancelled" } : b))
@@ -75,7 +68,7 @@ export default function MyBookingsPage() {
       setPendingCancel(null);
     } catch (err) {
       console.error(err);
-      toast.error("Network error.");
+      toast.error(err.message || "Could not cancel booking.");
     } finally {
       setCancelling(false);
     }

@@ -7,14 +7,17 @@ import {
 import CarCard from "@/components/CarCard";
 import { apiServer } from "@/lib/api";
 
+/**
+ * Fetch the most recent 6 available cars from drivefleet-server.
+ * Runs on the server so the first paint includes real data (SEO friendly,
+ * no client roundtrip).
+ */
 async function getAvailableCars() {
-  try {
-    const { cars } = await apiServer("/api/cars?limit=6");
-    return (cars || []).filter((c) => c.available !== false).slice(0, 6);
-  } catch (err) {
-    console.error("[home] failed to load cars:", err.message);
-    return [];
-  }
+  // No cookie needed — listing is public.
+  const data = await apiServer("/api/cars?limit=6&sort=newest");
+  if (!data?.cars) return [];
+  // Server returns all cars including unavailable; filter for the home preview.
+  return data.cars.filter((c) => c.available);
 }
 
 const CATEGORIES = [
@@ -82,7 +85,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Dynamic — Available Cars */}
+      {/* Dynamic — Available Cars from server */}
       <section className="container mx-auto px-4 py-16">
         <div className="mb-8 flex items-end justify-between gap-4">
           <div>

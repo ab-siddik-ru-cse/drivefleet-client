@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { Plus, Pencil, Trash2, MapPin, Users, Eye } from "lucide-react";
 import Spinner from "@/components/Spinner";
 import ConfirmModal from "@/components/ConfirmModal";
+import { api } from "@/lib/api";
 
 export default function MyCarsPage() {
   const [cars, setCars] = useState([]);
@@ -16,17 +17,13 @@ export default function MyCarsPage() {
   const fetchCars = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.API_URL}/cars?owner=me`, { cache: "no-store" });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error || "Could not load your cars.");
-        setCars([]);
-        return;
-      }
+      // ?owner=me on drivefleet-server filters to cars owned by req.user (JWT).
+      const data = await api("/api/cars?owner=me");
       setCars(data.cars ?? []);
     } catch (err) {
       console.error(err);
-      toast.error("Network error.");
+      toast.error(err.message || "Could not load your cars.");
+      setCars([]);
     } finally {
       setLoading(false);
     }
@@ -38,18 +35,14 @@ export default function MyCarsPage() {
     if (!pendingDelete) return;
     setDeleting(true);
     try {
-      const res = await fetch(`${process.env.API_URL}/cars/${pendingDelete._id}`, { method: "DELETE" });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error || "Could not delete car.");
-        return;
-      }
+      // Server checks ownership (car.ownerId === req.user.uid) before deleting.
+      await api(`/api/cars/${pendingDelete._id}`, { method: "DELETE" });
       toast.success("Car deleted.");
       setCars((cur) => cur.filter((c) => c._id !== pendingDelete._id));
       setPendingDelete(null);
     } catch (err) {
       console.error(err);
-      toast.error("Network error.");
+      toast.error(err.message || "Could not delete car.");
     } finally {
       setDeleting(false);
     }

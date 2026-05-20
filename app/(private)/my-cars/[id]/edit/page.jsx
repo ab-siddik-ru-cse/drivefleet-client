@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { ArrowLeft } from "lucide-react";
 import CarForm from "@/components/CarForm";
 import Spinner from "@/components/Spinner";
+import { api } from "@/lib/api";
 
 export default function EditCarPage() {
   const router = useRouter();
@@ -19,18 +20,14 @@ export default function EditCarPage() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`${process.env.API_URL}/cars/${id}`, { cache: "no-store" });
-        const data = await res.json();
+        const data = await api(`/api/cars/${id}`);
         if (cancelled) return;
-        if (!res.ok) {
-          toast.error(data.error || "Could not load car.");
-          setCar(null);
-        } else {
-          setCar(data.car);
-        }
+        setCar(data.car);
       } catch (err) {
+        if (cancelled) return;
         console.error(err);
-        toast.error("Network error.");
+        toast.error(err.message || "Could not load car.");
+        setCar(null);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -40,23 +37,18 @@ export default function EditCarPage() {
 
   const handleSubmit = async (values) => {
     try {
-      const res = await fetch(`${process.env.API_URL}/cars/${id}`, {
+      // PATCH on drivefleet-server enforces owner-only via requireAuth + check.
+      await api(`/api/cars/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        if (res.status === 403) setForbidden(true);
-        toast.error(data.error || "Could not update car.");
-        return;
-      }
       toast.success("Car updated.");
       router.push("/my-cars");
       router.refresh();
     } catch (err) {
       console.error(err);
-      toast.error("Network error.");
+      if (err.status === 403) setForbidden(true);
+      toast.error(err.message || "Could not update car.");
     }
   };
 

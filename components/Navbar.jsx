@@ -99,6 +99,7 @@ export default function Navbar() {
                     <p className="text-sm font-semibold">{user.name || "User"}</p>
                     <p className="truncate text-xs text-gray-500">{user.email}</p>
                   </div>
+                  <Link href="/profile" className="dropdown-item"><User size={15} /> My Profile</Link>
                   <Link href="/add-car" className="dropdown-item"><Plus size={15} /> Add Car</Link>
                   <Link href="/my-cars" className="dropdown-item"><ListChecks size={15} /> My Added Cars</Link>
                   <Link href="/my-bookings" className="dropdown-item"><CalendarCheck size={15} /> My Bookings</Link>
@@ -145,6 +146,7 @@ export default function Navbar() {
                   <p className="font-semibold">{user.name || "User"}</p>
                   <p className="truncate text-xs text-gray-500">{user.email}</p>
                 </div>
+                <Link href="/profile" className="dropdown-item"><User size={15} /> My Profile</Link>
                 <Link href="/add-car" className="dropdown-item"><Plus size={15} /> Add Car</Link>
                 <Link href="/my-cars" className="dropdown-item"><ListChecks size={15} /> My Added Cars</Link>
                 <Link href="/my-bookings" className="dropdown-item"><CalendarCheck size={15} /> My Bookings</Link>
