@@ -16,7 +16,7 @@ export default function MyCarsPage() {
   const fetchCars = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/cars?owner=me", { cache: "no-store" });
+      const res = await fetch(`${process.env.API_URL}/cars?owner=me`, { cache: "no-store" });
       const data = await res.json();
       if (!res.ok) {
         toast.error(data.error || "Could not load your cars.");
@@ -38,7 +38,7 @@ export default function MyCarsPage() {
     if (!pendingDelete) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/cars/${pendingDelete._id}`, { method: "DELETE" });
+      const res = await fetch(`${process.env.API_URL}/cars/${pendingDelete._id}`, { method: "DELETE" });
       const data = await res.json();
       if (!res.ok) {
         toast.error(data.error || "Could not delete car.");

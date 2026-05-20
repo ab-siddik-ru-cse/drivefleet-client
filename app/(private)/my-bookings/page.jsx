@@ -26,7 +26,7 @@ export default function MyBookingsPage() {
   const fetchBookings = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/bookings", { cache: "no-store" });
+      const res = await fetch(`${process.env.API_URL}/bookings`, { cache: "no-store" });
       const data = await res.json();
       if (!res.ok) {
         toast.error(data.error || "Could not load your bookings.");
@@ -62,7 +62,7 @@ export default function MyBookingsPage() {
     if (!pendingCancel) return;
     setCancelling(true);
     try {
-      const res = await fetch(`/api/bookings/${pendingCancel._id}`, { method: "DELETE" });
+      const res = await fetch(`${process.env.API_URL}/bookings/${pendingCancel._id}`, { method: "DELETE" });
       const data = await res.json();
       if (!res.ok) {
         toast.error(data.error || "Could not cancel booking.");

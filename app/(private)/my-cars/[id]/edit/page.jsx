@@ -19,7 +19,7 @@ export default function EditCarPage() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`/api/cars/${id}`, { cache: "no-store" });
+        const res = await fetch(`${process.env.API_URL}/cars/${id}`, { cache: "no-store" });
         const data = await res.json();
         if (cancelled) return;
         if (!res.ok) {
@@ -40,7 +40,7 @@ export default function EditCarPage() {
 
   const handleSubmit = async (values) => {
     try {
-      const res = await fetch(`/api/cars/${id}`, {
+      const res = await fetch(`${process.env.API_URL}/cars/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),

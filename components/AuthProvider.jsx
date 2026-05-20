@@ -1,89 +1,237 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { signInWithPopup } from "firebase/auth";
-import { firebaseAuth, googleProvider } from "@/lib/firebase";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 const AuthContext = createContext(null);
 
-export function AuthProvider({ children, initialUser = null }) {
-  const [user, setUser] = useState(initialUser);
-  const [loading, setLoading] = useState(false);
+const API_URL = "http://localhost:5000";
 
+export function AuthProvider({ children }) {
+
+  const [user, setUser] = useState(null);
+
+  const [loading, setLoading] = useState(true);
+
+  // Get Current Session User
   const refresh = useCallback(async () => {
+
     try {
-      const res = await fetch("/api/auth/me", { cache: "no-store" });
+
+      const res = await fetch(
+        `${API_URL}/api/auth/session`,
+        {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+        }
+      );
+
       const data = await res.json();
-      setUser(data.user ?? null);
-    } catch {
+
+      // Better Auth session structure
+      if (data?.user) {
+
+        setUser({
+          uid: data.user.id,
+          email: data.user.email,
+          name: data.user.name,
+          image: data.user.image,
+        });
+
+      } else {
+        setUser(null);
+      }
+
+    } catch (error) {
+
+      console.error("SESSION ERROR:", error);
+
       setUser(null);
+
+    } finally {
+
+      setLoading(false);
+
     }
+
   }, []);
 
+  // Email Login
   const login = async (email, password) => {
+
     setLoading(true);
+
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+
+      const res = await fetch(
+        `${API_URL}/api/auth/sign-in/email`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          credentials: "include",
+
+          body: JSON.stringify({
+            email,
+            password,
+          }),
+        }
+      );
+
       const data = await res.json();
-      if (!res.ok) return { ok: false, error: data.error };
-      setUser(data.user);
-      return { ok: true };
+
+      if (!res.ok) {
+        return {
+          ok: false,
+          error: data.message || "Login failed",
+        };
+      }
+
+      await refresh();
+
+      return {
+        ok: true,
+      };
+
+    } catch (error) {
+
+      console.error("LOGIN ERROR:", error);
+
+      return {
+        ok: false,
+        error: "Something went wrong",
+      };
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
+  // Register User
   const register = async (name, email, password) => {
+
     setLoading(true);
+
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
+
+      const res = await fetch(
+        `${API_URL}/api/auth/sign-up/email`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          credentials: "include",
+
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+          }),
+        }
+      );
+
       const data = await res.json();
-      if (!res.ok) return { ok: false, error: data.error };
-      setUser(data.user);
-      return { ok: true };
+
+      if (!res.ok) {
+        return {
+          ok: false,
+          error: data.message || "Registration failed",
+        };
+      }
+
+      await refresh();
+
+      return {
+        ok: true,
+      };
+
+    } catch (error) {
+
+      console.error("REGISTER ERROR:", error);
+
+      return {
+        ok: false,
+        error: "Something went wrong",
+      };
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
+  // Google Login
   const loginWithGoogle = async () => {
-    setLoading(true);
+
     try {
-      const result = await signInWithPopup(firebaseAuth, googleProvider);
-      const idToken = await result.user.getIdToken();
-      const res = await fetch("/api/auth/google", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken }),
-      });
-      const data = await res.json();
-      if (!res.ok) return { ok: false, error: data.error };
-      setUser(data.user);
-      return { ok: true };
-    } catch (err) {
-      console.error(err);
-      return { ok: false, error: "Google sign-in was cancelled or failed." };
-    } finally {
-      setLoading(false);
+
+      window.location.href =
+        `${API_URL}/api/auth/sign-in/social?provider=google`;
+
+    } catch (error) {
+
+      console.error("GOOGLE LOGIN ERROR:", error);
+
     }
   };
 
+  // Logout
   const logout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    setUser(null);
+
+    try {
+
+      await fetch(
+        `${API_URL}/api/auth/sign-out`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+
+      setUser(null);
+
+    } catch (error) {
+
+      console.error("LOGOUT ERROR:", error);
+
+    }
   };
+
+  // Initial Session Load
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, loginWithGoogle, logout, refresh }}
+      value={{
+        user,
+        loading,
+
+        login,
+        register,
+
+        loginWithGoogle,
+
+        logout,
+
+        refresh,
+      }}
     >
       {children}
     </AuthContext.Provider>
@@ -91,7 +239,14 @@ export function AuthProvider({ children, initialUser = null }) {
 }
 
 export function useAuth() {
+
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+
+  if (!ctx) {
+    throw new Error(
+      "useAuth must be used within AuthProvider"
+    );
+  }
+
   return ctx;
 }

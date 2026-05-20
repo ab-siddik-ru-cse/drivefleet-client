@@ -24,7 +24,7 @@ export default function CarDetailsClient({ car, currentUser }) {
   const handleBooking = async ({ startDate, endDate, driverNeeded, specialNote }) => {
     setSubmitting(true);
     try {
-      const res = await fetch("/api/bookings", {
+      const res = await fetch(`${process.env.API_URL}/bookings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

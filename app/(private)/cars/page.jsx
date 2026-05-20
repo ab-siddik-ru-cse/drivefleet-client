@@ -46,7 +46,7 @@ export default function ExplorePage() {
       if (debouncedQ) params.set("q", debouncedQ);
       selectedTypes.forEach((t) => params.append("type", t));
       params.set("sort", sort);
-      const res = await fetch(`/api/cars?${params.toString()}`, { cache: "no-store" });
+      const res = await fetch(`${process.env.API_URL}/cars?${params.toString()}`, { cache: "no-store" });
       const data = await res.json();
       setCars(data.cars ?? []);
     } catch (err) {
