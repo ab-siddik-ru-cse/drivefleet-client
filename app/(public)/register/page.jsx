@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { Eye, EyeOff, UserPlus, Check, X } from "lucide-react";
+import { Eye, EyeOff, UserPlus, Check, X, Image as ImageIcon } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import GoogleButton from "@/components/GoogleButton";
 import { validatePassword } from "@/lib/validation";
@@ -15,6 +15,8 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [image, setImage] = useState("");
+  const [imageError, setImageError] = useState(false);
   const [show, setShow] = useState(false);
 
   const checks = useMemo(() => ({
@@ -30,7 +32,13 @@ export default function RegisterPage() {
       toast.error(pwErr);
       return;
     }
-    const res = await register(name, email, password);
+    
+    if (image.trim() && !/^https?:\/\//i.test(image.trim())) {
+      toast.error("Photo URL must start with http:// or https://");
+      return;
+    }
+
+    const res = await register(name, email, password, image.trim());
     if (!res.ok) {
       toast.error(res.error || "Registration failed.");
       return;
@@ -49,6 +57,24 @@ export default function RegisterPage() {
             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
               Start renting or listing cars in minutes
             </p>
+          </div>
+
+          {/* Live avatar preview — shows initial until the image URL loads */}
+          <div className="mb-5 flex justify-center">
+            {image.trim() && !imageError ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={image.trim()}
+                alt="Avatar preview"
+                className="h-20 w-20 rounded-full object-cover ring-4 ring-brand-100 dark:ring-brand-900/40"
+                onLoad={() => setImageError(false)}
+                onError={() => setImageError(true)}
+              />
+            ) : (
+              <span className="grid h-20 w-20 place-items-center rounded-full bg-brand-600 text-2xl font-bold text-white ring-4 ring-brand-100 dark:ring-brand-900/40">
+                {(name || "?")[0]?.toUpperCase()}
+              </span>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -72,6 +98,31 @@ export default function RegisterPage() {
                 className="input"
                 autoComplete="email"
               />
+            </div>
+
+            <div>
+              <label htmlFor="image" className="label">
+                <ImageIcon size={13} className="inline" /> Profile photo URL (optional)
+              </label>
+              <input
+                id="image" type="url" value={image}
+                onChange={(e) => {
+                  setImage(e.target.value);
+                  setImageError(false);
+                }}
+                placeholder="https://i.ibb.co/..."
+                className="input"
+              />
+              {imageError && image.trim() && (
+                <p className="mt-1.5 text-xs text-red-600">
+                  Couldn&apos;t load that image. You can change it later from your profile.
+                </p>
+              )}
+              {!imageError && (
+                <p className="mt-1.5 text-xs text-gray-500">
+                  Paste a public image URL or leave blank to use your initials.
+                </p>
+              )}
             </div>
 
             <div>

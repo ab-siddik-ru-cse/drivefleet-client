@@ -10,8 +10,6 @@ export default function AddCarPage() {
 
   const handleSubmit = async (values) => {
     try {
-      // POST to drivefleet-server. requireAuth middleware reads the JWT
-      // cookie and attaches req.user, so the server knows who owns this car.
       await api("/api/cars", {
         method: "POST",
         body: JSON.stringify(values),

@@ -17,7 +17,6 @@ export default function MyCarsPage() {
   const fetchCars = useCallback(async () => {
     setLoading(true);
     try {
-      // ?owner=me on drivefleet-server filters to cars owned by req.user (JWT).
       const data = await api("/api/cars?owner=me");
       setCars(data.cars ?? []);
     } catch (err) {
@@ -35,7 +34,6 @@ export default function MyCarsPage() {
     if (!pendingDelete) return;
     setDeleting(true);
     try {
-      // Server checks ownership (car.ownerId === req.user.uid) before deleting.
       await api(`/api/cars/${pendingDelete._id}`, { method: "DELETE" });
       toast.success("Car deleted.");
       setCars((cur) => cur.filter((c) => c._id !== pendingDelete._id));
