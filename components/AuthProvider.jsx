@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { api, API_BASE, setStoredToken, clearStoredToken, getStoredToken } from "@/lib/api";
 
 const AuthContext = createContext(null);
 
@@ -9,35 +9,30 @@ export function AuthProvider({ children, initialUser = null }) {
   const [user, setUser] = useState(initialUser);
   const [loading, setLoading] = useState(false);
 
-  /**
-   * After Better Auth sign-in, ask server to issue our JWT cookie.
-   * Server reads its session, signs a JWT, sets df_token cookie.
-   * Cookie is same-origin so browser stores and sends it naturally.
-   */
   const issueJwt = useCallback(async () => {
-    const { user } = await api("/api/session/issue-jwt", { method: "POST" });
-    setUser(user);
-    return user;
+    const res = await api("/api/session/issue-jwt", { method: "POST" });
+    if (res.token) setStoredToken(res.token);
+    setUser(res.user);
+    return res.user;
   }, []);
 
   const refresh = useCallback(async () => {
     try {
       const { user } = await api("/api/session/me");
       setUser(user ?? null);
+      if (!user) clearStoredToken();
       return user;
     } catch {
       setUser(null);
+      clearStoredToken();
       return null;
     }
   }, []);
 
-  /**
-   * On mount, verify session from server. Cookies are sent automatically
-   * because they're first-party (thanks to next.config rewrites).
-   */
+  // On mount, if we have a stored token, verify it with the server.
   useEffect(() => {
     if (initialUser) return;
-    refresh();
+    if (getStoredToken()) refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -86,6 +81,18 @@ export function AuthProvider({ children, initialUser = null }) {
     }
   };
 
+  /**
+   * Google sign-in: redirect to server's Better Auth endpoint.
+   *
+   * KEY: callbackURL points to the SERVER's google-handoff endpoint,
+   * NOT the client. Server reads its own session (cookies work
+   * same-origin there), mints a JWT, and redirects to client's
+   * /auth-callback with the token in URL hash.
+   *
+   * Why? In cross-origin deployment, the client can NEVER reliably
+   * read Better Auth's session cookie (it's on the server's domain).
+   * So we do the JWT handoff entirely on the server side.
+   */
   const loginWithGoogle = async () => {
     setLoading(true);
     try {
@@ -93,10 +100,12 @@ export function AuthProvider({ children, initialUser = null }) {
         method: "POST",
         body: JSON.stringify({
           provider: "google",
-          callbackURL: `${window.location.origin}/auth-callback`,
+          // After Google authenticates, Better Auth lands here on the SERVER.
+          callbackURL: `${API_BASE}/api/session/google-handoff`,
         }),
       });
       if (!res?.url) {
+        setLoading(false);
         return { ok: false, error: "Could not start Google sign-in." };
       }
       window.location.href = res.url;
@@ -113,6 +122,7 @@ export function AuthProvider({ children, initialUser = null }) {
     } catch {
       /* ignore */
     }
+    clearStoredToken();
     setUser(null);
   };
 
@@ -127,6 +137,7 @@ export function AuthProvider({ children, initialUser = null }) {
         logout,
         refresh,
         issueJwt,
+        apiBase: API_BASE,
       }}
     >
       {children}

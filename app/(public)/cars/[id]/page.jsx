@@ -1,24 +1,12 @@
 import { notFound } from "next/navigation";
-import { cookies } from "next/headers";
 import { apiServer } from "@/lib/api";
 import CarDetailsClient from "./CarDetailsClient";
 
 export const dynamic = "force-dynamic";
 
-/**
- * Server-side: fetches the public car details + the current user (if any).
- * Same-origin cookies (via proxy) make this work — cookies() returns the
- * auth cookies and we forward them to the Express server.
- */
 export default async function CarDetailsPage({ params }) {
-  const cookieHeader = cookies().toString();
-
-  const [carData, sessionData] = await Promise.all([
-    apiServer(`/api/cars/${params.id}`),
-    apiServer("/api/session/me", cookieHeader),
-  ]);
-
+  const carData = await apiServer(`/api/cars/${params.id}`);
   if (!carData?.car) notFound();
 
-  return <CarDetailsClient car={carData.car} currentUser={sessionData?.user ?? null} />;
+  return <CarDetailsClient car={carData.car} />;
 }

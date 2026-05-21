@@ -1,15 +1,9 @@
 import "./globals.css";
-import { cookies } from "next/headers";
 import { AuthProvider } from "@/components/AuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import ToastProvider from "@/components/ToastProvider";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { apiServer } from "@/lib/api";
-
-// This layout reads cookies on every request, so it must be dynamic.
-// Without this Next.js may try to pre-render at build time and fail.
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "DriveFleet — Rent a car your way",
@@ -26,22 +20,7 @@ const themeScript = `
 }catch(e){}})();
 `;
 
-/**
- * Fetch the current user from the server during SSR so the Navbar
- * renders correctly on first paint (no flicker, no flash of logged-out UI).
- *
- * We forward the incoming request's cookies to the server so it can
- * read the df_token / Better Auth session.
- */
-async function getInitialUser() {
-  const cookieHeader = cookies().toString();
-  const data = await apiServer("/api/session/me", cookieHeader);
-  return data?.user ?? null;
-}
-
-export default async function RootLayout({ children }) {
-  const initialUser = await getInitialUser();
-
+export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -49,7 +28,7 @@ export default async function RootLayout({ children }) {
       </head>
       <body>
         <ThemeProvider>
-          <AuthProvider initialUser={initialUser}>
+          <AuthProvider initialUser={null}>
             <ToastProvider />
             <div className="flex min-h-screen flex-col">
               <Navbar />

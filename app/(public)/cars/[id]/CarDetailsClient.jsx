@@ -13,12 +13,10 @@ import BookingModal from "@/components/BookingModal";
 import { useAuth } from "@/components/AuthProvider";
 import { api } from "@/lib/api";
 
-export default function CarDetailsClient({ car, currentUser: initialUser }) {
+export default function CarDetailsClient({ car }) {
   const router = useRouter();
-  // Prefer the SSR-provided user (no flicker) but stay reactive via useAuth
-  // for cases where the user signs in/out without a page reload.
-  const { user: ctxUser } = useAuth();
-  const currentUser = ctxUser ?? initialUser;
+  // User comes from auth context (browser-side, reads localStorage token).
+  const { user: currentUser } = useAuth();
   const [modalOpen, setModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 

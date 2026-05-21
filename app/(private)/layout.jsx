@@ -1,25 +1,61 @@
-import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
-import { apiServer } from "@/lib/api";
+"use client";
 
-export const dynamic = "force-dynamic";
+import { useEffect, useRef, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useAuth } from "@/components/AuthProvider";
+import { getStoredToken } from "@/lib/api";
+import Spinner from "@/components/Spinner";
 
 /**
- * Server-side auth guard for the (private) route group.
- *
- * Now works perfectly because the Next.js proxy keeps everything same-origin:
- * the auth cookies are stored on THIS domain, so cookies() can read them
- * and we can forward them to the Express server for verification.
- *
- * No spinner flash, no client-side check needed — the page either renders
- * straight away or the user is redirected to login before render.
+ * Client-side auth guard. SSR cannot read localStorage, so the check
+ * must happen in the browser. Pattern:
+ *   1. If no token in localStorage → redirect to login immediately (no flash)
+ *   2. If token present → call /api/session/me to verify with server
+ *   3. If server says invalid → clear and redirect
+ *   4. If server says ok → render children
  */
-export default async function PrivateLayout({ children }) {
-  const cookieHeader = cookies().toString();
-  const data = await apiServer("/api/session/me", cookieHeader);
+export default function PrivateLayout({ children }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { user, refresh } = useAuth();
+  const [checking, setChecking] = useState(true);
+  const verifyAttempted = useRef(false);
 
-  if (!data?.user) {
-    redirect("/login");
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      // Quick check: no token at all → straight to login.
+      if (!getStoredToken() && !user) {
+        const redirect = encodeURIComponent(pathname || "/");
+        router.replace(`/login?redirect=${redirect}`);
+        return;
+      }
+
+      // Have a token (or already-loaded user). Verify with server once.
+      if (!verifyAttempted.current) {
+        verifyAttempted.current = true;
+        const fresh = await refresh();
+        if (cancelled) return;
+        if (!fresh) {
+          const redirect = encodeURIComponent(pathname || "/");
+          router.replace(`/login?redirect=${redirect}`);
+          return;
+        }
+      }
+
+      if (!cancelled) setChecking(false);
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  if (checking || !user) {
+    return (
+      <div className="container mx-auto px-4 py-16">
+        <Spinner />
+      </div>
+    );
   }
+
   return <>{children}</>;
 }
