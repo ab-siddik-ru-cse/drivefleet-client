@@ -6,14 +6,6 @@ import { useAuth } from "@/components/AuthProvider";
 import { getStoredToken } from "@/lib/api";
 import Spinner from "@/components/Spinner";
 
-/**
- * Client-side auth guard. SSR cannot read localStorage, so the check
- * must happen in the browser. Pattern:
- *   1. If no token in localStorage → redirect to login immediately (no flash)
- *   2. If token present → call /api/session/me to verify with server
- *   3. If server says invalid → clear and redirect
- *   4. If server says ok → render children
- */
 export default function PrivateLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();

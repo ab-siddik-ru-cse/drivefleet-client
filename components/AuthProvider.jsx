@@ -81,18 +81,6 @@ export function AuthProvider({ children, initialUser = null }) {
     }
   };
 
-  /**
-   * Google sign-in: redirect to server's Better Auth endpoint.
-   *
-   * KEY: callbackURL points to the SERVER's google-handoff endpoint,
-   * NOT the client. Server reads its own session (cookies work
-   * same-origin there), mints a JWT, and redirects to client's
-   * /auth-callback with the token in URL hash.
-   *
-   * Why? In cross-origin deployment, the client can NEVER reliably
-   * read Better Auth's session cookie (it's on the server's domain).
-   * So we do the JWT handoff entirely on the server side.
-   */
   const loginWithGoogle = async () => {
     setLoading(true);
     try {

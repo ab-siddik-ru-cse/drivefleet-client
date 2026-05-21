@@ -9,9 +9,6 @@ import { useAuth } from "@/components/AuthProvider";
 import GoogleButton from "@/components/GoogleButton";
 import Spinner from "@/components/Spinner";
 
-// Wrap in Suspense because useSearchParams() requires it on Next.js 14
-// during static rendering / build. Without this the build fails with:
-//   "useSearchParams() should be wrapped in a suspense boundary"
 export default function LoginPage() {
   return (
     <Suspense fallback={<div className="container mx-auto px-4 py-16"><Spinner /></div>}>

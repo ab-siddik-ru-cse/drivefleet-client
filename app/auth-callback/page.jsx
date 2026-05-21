@@ -7,13 +7,6 @@ import { setStoredToken } from "@/lib/api";
 import { useAuth } from "@/components/AuthProvider";
 import Spinner from "@/components/Spinner";
 
-/**
- * Server's google-handoff endpoint redirects here with the JWT in the
- * URL hash: /auth-callback#token=<jwt>
- *
- * We read the hash, store the token in localStorage, then redirect to
- * home. The hash never reaches the server so it's not logged anywhere.
- */
 export default function AuthCallbackPage() {
   const router = useRouter();
   const { refresh } = useAuth();
@@ -37,10 +30,8 @@ export default function AuthCallbackPage() {
         const token = decodeURIComponent(m[1]);
         setStoredToken(token);
 
-        // Clear the hash from the URL so the token isn't visible.
         window.history.replaceState(null, "", "/auth-callback");
 
-        // Verify and load user data into the auth context.
         await refresh();
 
         toast.success("Welcome!");

@@ -8,9 +8,6 @@ import Spinner from "@/components/Spinner";
 import { CAR_TYPES } from "@/lib/constants";
 import { api } from "@/lib/api";
 
-// Suspense wrapper required by Next.js 14 because useSearchParams() is
-// inside the inner component. Without this the build fails with:
-//   "useSearchParams() should be wrapped in a suspense boundary"
 export default function ExplorePage() {
   return (
     <Suspense fallback={<div className="container mx-auto px-4 py-16"><Spinner /></div>}>
