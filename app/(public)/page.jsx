@@ -36,6 +36,8 @@ const FEATURES = [
   { icon: Headphones, title: "24/7 Support", text: "Stuck on the road? Our team is one call away, day or night." },
 ];
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const cars = await getAvailableCars();
 

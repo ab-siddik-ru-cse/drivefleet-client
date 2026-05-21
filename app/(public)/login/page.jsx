@@ -1,14 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import GoogleButton from "@/components/GoogleButton";
+import Spinner from "@/components/Spinner";
 
+// Wrap in Suspense because useSearchParams() requires it on Next.js 14
+// during static rendering / build. Without this the build fails with:
+//   "useSearchParams() should be wrapped in a suspense boundary"
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="container mx-auto px-4 py-16"><Spinner /></div>}>
+      <LoginPageInner />
+    </Suspense>
+  );
+}
+
+function LoginPageInner() {
   const { login, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();

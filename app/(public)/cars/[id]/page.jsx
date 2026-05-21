@@ -3,6 +3,8 @@ import { cookies } from "next/headers";
 import { apiServer } from "@/lib/api";
 import CarDetailsClient from "./CarDetailsClient";
 
+export const dynamic = "force-dynamic";
+
 /**
  * Server-side: fetches the public car details + the current user (if any).
  * Same-origin cookies (via proxy) make this work — cookies() returns the

@@ -7,6 +7,10 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { apiServer } from "@/lib/api";
 
+// This layout reads cookies on every request, so it must be dynamic.
+// Without this Next.js may try to pre-render at build time and fail.
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "DriveFleet — Rent a car your way",
   description: "Browse hundreds of vehicles from trusted owners. Book in seconds.",

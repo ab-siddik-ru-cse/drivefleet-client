@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { apiServer } from "@/lib/api";
 
+export const dynamic = "force-dynamic";
+
 /**
  * Server-side auth guard for the (private) route group.
  *
