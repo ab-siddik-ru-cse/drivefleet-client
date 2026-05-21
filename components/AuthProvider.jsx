@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, useCallback, useContext, useState } from "react";
-import { api, API_BASE } from "@/lib/api";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { api } from "@/lib/api";
 
 const AuthContext = createContext(null);
 
@@ -9,13 +9,16 @@ export function AuthProvider({ children, initialUser = null }) {
   const [user, setUser] = useState(initialUser);
   const [loading, setLoading] = useState(false);
 
-
+  /**
+   * After Better Auth sign-in, ask server to issue our JWT cookie.
+   * Server reads its session, signs a JWT, sets df_token cookie.
+   * Cookie is same-origin so browser stores and sends it naturally.
+   */
   const issueJwt = useCallback(async () => {
     const { user } = await api("/api/session/issue-jwt", { method: "POST" });
     setUser(user);
     return user;
   }, []);
-
 
   const refresh = useCallback(async () => {
     try {
@@ -28,6 +31,15 @@ export function AuthProvider({ children, initialUser = null }) {
     }
   }, []);
 
+  /**
+   * On mount, verify session from server. Cookies are sent automatically
+   * because they're first-party (thanks to next.config rewrites).
+   */
+  useEffect(() => {
+    if (initialUser) return;
+    refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const login = async (email, password) => {
     setLoading(true);
@@ -52,7 +64,6 @@ export function AuthProvider({ children, initialUser = null }) {
         method: "POST",
         body: JSON.stringify({ name, email, password }),
       });
-
       const u = await issueJwt();
 
       if (image && image.trim()) {
@@ -96,12 +107,11 @@ export function AuthProvider({ children, initialUser = null }) {
     }
   };
 
-  /**
-   */
   const logout = async () => {
     try {
       await api("/api/session/logout", { method: "POST" });
     } catch {
+      /* ignore */
     }
     setUser(null);
   };
@@ -117,7 +127,6 @@ export function AuthProvider({ children, initialUser = null }) {
         logout,
         refresh,
         issueJwt,
-        apiBase: API_BASE,
       }}
     >
       {children}

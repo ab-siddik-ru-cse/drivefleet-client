@@ -32,12 +32,15 @@ export default function RegisterPage() {
       toast.error(pwErr);
       return;
     }
-    
+    // Light validation on the image URL — server validates too but giving
+    // instant feedback feels better.
     if (image.trim() && !/^https?:\/\//i.test(image.trim())) {
       toast.error("Photo URL must start with http:// or https://");
       return;
     }
 
+    // Pass image as 4th arg — AuthProvider will save it via PATCH /api/users/me
+    // after the account is created and the JWT is issued.
     const res = await register(name, email, password, image.trim());
     if (!res.ok) {
       toast.error(res.error || "Registration failed.");
