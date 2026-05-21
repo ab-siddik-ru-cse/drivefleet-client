@@ -7,6 +7,7 @@ import {
 import CarCard from "@/components/CarCard";
 import { apiServer } from "@/lib/api";
 
+
 async function getAvailableCars() {
   const data = await apiServer("/api/cars?limit=6&sort=newest");
   if (!data?.cars) return [];
@@ -29,15 +30,6 @@ const FEATURES = [
   { icon: Headphones, title: "24/7 Support", text: "Stuck on the road? Our team is one call away, day or night." },
 ];
 
-const SLIDES = [
-  {
-    image:
-      "https://media.wired.com/photos/63b8d0a771c6b526845f15a6/master/w_1600%2Cc_limit/CES-2023-PEUGEOT_INCEPTION_CONCEPT_2301CN202.jpg",
-    title: "Fast Booking. Better Experience.",
-    text: "Book in seconds and hit the road instantly.",
-  },
-];
-
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
@@ -45,91 +37,44 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* HERO SECTION */}
-      <section className="relative h-[95vh] overflow-hidden">
-        {/* SLIDER */}
-        <div className="absolute inset-0">
-          {SLIDES.map((slide, index) => (
-            <div
-              key={index}
-              className="absolute inset-0 slider-animation"
-              style={{
-                animationDelay: `${index * 5}s`,
-              }}
-            >
-              <Image
-                src={slide.image}
-                alt={slide.title}
-                fill
-                priority={index === 0}
-                className="object-cover"
-              />
-
-              <div className="absolute inset-0 bg-black/60" />
-            </div>
-          ))}
-        </div>
-
-        {/* CONTENT */}
-        <div className="relative z-10 container mx-auto flex h-full items-center px-4">
-          <div className="max-w-3xl text-white">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm backdrop-blur-md">
-              <Sparkles size={16} />
-              Premium Car Rental Platform
-            </div>
-
-            <h1 className="text-5xl font-extrabold leading-tight md:text-7xl">
-              Rent Cars
-              <span className="block text-brand-300">
-                Without Limits.
-              </span>
-            </h1>
-
-            <p className="mt-6 max-w-2xl text-lg text-white/80 md:text-xl">
-              Discover premium, luxury, electric, and everyday cars from
-              trusted owners. Seamless booking experience with complete
-              transparency.
+      {/* Banner */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-brand-900 via-brand-700 to-brand-500 text-white">
+        <div className="container mx-auto grid gap-10 px-4 py-20 md:grid-cols-2 md:py-28">
+          <div className="flex flex-col justify-center">
+            <p className="mb-3 inline-flex w-fit items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider backdrop-blur">
+              <Sparkles size={14} /> Drive anywhere, anytime
             </p>
-
-            <div className="mt-10 flex flex-wrap gap-4">
-              <Link
-                href="/cars"
-                className="inline-flex items-center gap-2 rounded-2xl bg-white px-7 py-4 text-sm font-semibold text-black transition hover:scale-105"
-              >
-                <Search size={18} />
-                Explore Cars
+            <h1 className="text-4xl font-extrabold leading-tight md:text-5xl lg:text-6xl">
+              Rent a car your way.
+            </h1>
+            <p className="mt-4 max-w-md text-lg text-white/85">
+              Browse hundreds of vehicles from trusted owners. Book in seconds. Hit the road in style.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/cars" className="btn-primary !bg-white !text-brand-700 hover:!bg-gray-100">
+                <Search size={16} /> Explore Cars
               </Link>
-
-              <Link
-                href="/add-car"
-                className="inline-flex items-center gap-2 rounded-2xl border border-white/30 bg-white/10 px-7 py-4 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20"
-              >
+              <Link href="/add-car" className="btn-outline !border-white/40 !bg-white/10 !text-white hover:!bg-white/20">
                 List Your Car
-                <ChevronRight size={18} />
               </Link>
             </div>
+          </div>
 
-            {/* STATS */}
-            <div className="mt-14 grid max-w-xl grid-cols-3 gap-6">
-              <div>
-                <h3 className="text-3xl font-bold">500+</h3>
-                <p className="text-sm text-white/70">
-                  Premium Cars
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-3xl font-bold">50+</h3>
-                <p className="text-sm text-white/70">
-                  Cities Covered
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-3xl font-bold">10k+</h3>
-                <p className="text-sm text-white/70">
-                  Happy Clients
-                </p>
+          <div className="hidden items-center justify-center md:flex">
+            <div className="rounded-3xl bg-white/10 p-8 backdrop-blur">
+              <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/20">
+                <div className="flex items-center gap-3">
+                  <ShieldCheck size={28} />
+                  <div>
+                    <p className="font-semibold">Secure & Verified</p>
+                    <p className="text-sm text-white/70">JWT-protected bookings</p>
+                  </div>
+                </div>
+                <div className="mt-6 grid grid-cols-3 gap-4 text-center">
+                  <div><p className="text-2xl font-bold">500+</p><p className="text-xs text-white/70">Cars</p></div>
+                  <div><p className="text-2xl font-bold">50+</p><p className="text-xs text-white/70">Cities</p></div>
+                  <div><p className="text-2xl font-bold">10k+</p><p className="text-xs text-white/70">Happy renters</p></div>
+                </div>
               </div>
             </div>
           </div>
