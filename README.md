@@ -2,7 +2,9 @@
 
 Next.js 14 frontend for the DriveFleet car rental platform. Pairs with the **`drivefleet-server`** Express + Better Auth backend.
 
-**Live demo:** _add your Vercel URL here once deployed_
+## 🌐 Live Demo
+
+🔗 [DriveFleet Live Website](https://drivefleet-client-phi.vercel.app/)
 
 ---
 
