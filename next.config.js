@@ -9,6 +9,13 @@ const nextConfig = {
       },
     ],
   },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "1mb",
+    },
+  },
+
+  serverExternalPackages: [],
 };
 
 module.exports = nextConfig;

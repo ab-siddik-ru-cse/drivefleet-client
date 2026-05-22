@@ -9,9 +9,13 @@ import { apiServer } from "@/lib/api";
 
 
 async function getAvailableCars() {
-  const data = await apiServer("/api/cars?limit=6&sort=newest");
-  if (!data?.cars) return [];
-  return data.cars.filter((c) => c.available);
+  try {
+    const data = await apiServer("/api/cars?limit=6&sort=newest");
+    if (!data?.cars) return [];
+    return data.cars.filter((c) => c.available);
+  } catch {
+    return [];
+  }
 }
 
 const CATEGORIES = [
@@ -98,9 +102,13 @@ export default async function HomePage() {
         {cars.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-gray-300 px-6 py-12 text-center dark:border-gray-700">
             <p className="text-gray-500">
-              No cars listed yet. Be the first to{" "}
+              No cars available right now.{" "}
+              <Link href="/cars" className="font-semibold text-brand-600 hover:underline">
+                Browse all cars
+              </Link>{" "}
+              or{" "}
               <Link href="/add-car" className="font-semibold text-brand-600 hover:underline">
-                list your car
+                list your own
               </Link>.
             </p>
           </div>
@@ -109,6 +117,12 @@ export default async function HomePage() {
             {cars.map((car, i) => (<CarCard key={car._id} car={car} index={i} />))}
           </div>
         )}
+
+        <div className="mt-8 text-center md:hidden">
+          <Link href="/cars" className="text-sm font-semibold text-brand-600 hover:underline">
+            View all cars →
+          </Link>
+        </div>
       </section>
 
       {/* Static — Why Choose Us */}
