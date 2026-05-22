@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import CarCard from "@/components/CarCard";
 import { apiServer } from "@/lib/api";
+import Banner from "@/components/Banner";
 
 
 async function getAvailableCars() {
@@ -41,50 +42,7 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Banner */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-brand-900 via-brand-700 to-brand-500 text-white">
-        <div className="container mx-auto grid gap-10 px-4 py-20 md:grid-cols-2 md:py-28">
-          <div className="flex flex-col justify-center">
-            <p className="mb-3 inline-flex w-fit items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider backdrop-blur">
-              <Sparkles size={14} /> Drive anywhere, anytime
-            </p>
-            <h1 className="text-4xl font-extrabold leading-tight md:text-5xl lg:text-6xl">
-              Rent a car your way.
-            </h1>
-            <p className="mt-4 max-w-md text-lg text-white/85">
-              Browse hundreds of vehicles from trusted owners. Book in seconds. Hit the road in style.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/cars" className="btn-primary !bg-white !text-brand-700 hover:!bg-gray-100">
-                <Search size={16} /> Explore Cars
-              </Link>
-              <Link href="/add-car" className="btn-outline !border-white/40 !bg-white/10 !text-white hover:!bg-white/20">
-                List Your Car
-              </Link>
-            </div>
-          </div>
-
-          <div className="hidden items-center justify-center md:flex">
-            <div className="rounded-3xl bg-white/10 p-8 backdrop-blur">
-              <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-white/20">
-                <div className="flex items-center gap-3">
-                  <ShieldCheck size={28} />
-                  <div>
-                    <p className="font-semibold">Secure & Verified</p>
-                    <p className="text-sm text-white/70">JWT-protected bookings</p>
-                  </div>
-                </div>
-                <div className="mt-6 grid grid-cols-3 gap-4 text-center">
-                  <div><p className="text-2xl font-bold">500+</p><p className="text-xs text-white/70">Cars</p></div>
-                  <div><p className="text-2xl font-bold">50+</p><p className="text-xs text-white/70">Cities</p></div>
-                  <div><p className="text-2xl font-bold">10k+</p><p className="text-xs text-white/70">Happy renters</p></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
+      <Banner/>
       {/* Dynamic — Available Cars from server */}
       <section className="container mx-auto px-4 py-16">
         <div className="mb-8 flex items-end justify-between gap-4">
