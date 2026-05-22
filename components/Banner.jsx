@@ -23,7 +23,7 @@ export default function Banner() {
       />
 
       {/* Dark Overlay */}
-      <div className="absolute inset-0 bg-black/65" />
+      <div className="absolute inset-0 bg-black/20" />
 
       {/* Gradient Effect */}
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
@@ -73,58 +73,9 @@ export default function Banner() {
               <ChevronRight size={18} />
             </Link>
           </div>
-
-          {/* Bottom Stats */}
-          <div className="mt-16 grid max-w-2xl grid-cols-2 gap-5 md:grid-cols-4">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-md">
-              <h3 className="text-3xl font-bold">500+</h3>
-              <p className="mt-1 text-sm text-white/70">Premium Cars</p>
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-md">
-              <h3 className="text-3xl font-bold">50+</h3>
-              <p className="mt-1 text-sm text-white/70">Cities</p>
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-md">
-              <h3 className="text-3xl font-bold">10k+</h3>
-              <p className="mt-1 text-sm text-white/70">Happy Clients</p>
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-md">
-              <div className="flex items-center gap-1">
-                <Star
-                  size={18}
-                  className="fill-yellow-400 text-yellow-400"
-                />
-                <h3 className="text-3xl font-bold">4.9</h3>
-              </div>
-
-              <p className="mt-1 text-sm text-white/70">
-                Customer Rating
-              </p>
-            </div>
-          </div>
         </div>
       </div>
 
-      {/* Floating Card */}
-      <div className="absolute bottom-10 right-10 hidden rounded-3xl border border-white/10 bg-white/10 p-6 backdrop-blur-xl lg:block">
-        <div className="flex items-center gap-4">
-          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-brand-500/20 text-brand-300">
-            <ShieldCheck size={28} />
-          </div>
-
-          <div>
-            <h4 className="text-lg font-semibold text-white">
-              Trusted & Secure
-            </h4>
-            <p className="text-sm text-white/70">
-              Verified owners & protected bookings
-            </p>
-          </div>
-        </div>
-      </div>
     </section>
   );
 }
